@@ -1,15 +1,3 @@
-/**
- *Submitted for verification at hecoinfo.com on 2021-03-03
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2020-09-16
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2020-09-15
-*/
-
 pragma solidity ^0.5.16;
 //pragma experimental ABIEncoderV2;
 
@@ -201,7 +189,7 @@ library SafeMath {
 contract LOM {
     /// @notice EIP-20 token name for this token
     string public constant name = "Lengend Of Mir";
-
+    
     /// @notice EIP-20 token symbol for this token
     string public constant symbol = "LOM";
 
@@ -209,7 +197,7 @@ contract LOM {
     uint8 public constant decimals = 18;
 
     /// @notice Total number of tokens in circulation
-    uint public totalSupply = 500_000_00e18; // 1 billion LOM
+    uint public totalSupply = 500_000_00e18; // 0.5 billion LOM
 
     /// @notice Address which may work like owner
     address public minter;
@@ -217,13 +205,9 @@ contract LOM {
     /// @notice burning fee dispatch address
     address public dispatcherAddress;
 
+    /// @notice burning ratio per transfer, 0 means no burning.
     uint public burningRatio = 0;
 
-    /// @notice The timestamp after which minting may occur
-    //uint public mintingAllowedAfter;
-
-    /// @notice Minimum time between mints
-    uint32 public constant minimumTimeBetweenMints = 1 days * 365;
 
     /// @notice Cap on the percentage of totalSupply that can be minted at each mint
     ///uint8 public constant mintCap = 2;
@@ -239,17 +223,7 @@ contract LOM {
     mapping( address => bool) public fromBlockList;
     mapping( address => bool) public toBlockList;
 
-    /// @notice A checkpoint for marking number of votes from a given block
-    struct Checkpoint {
-        uint32 fromBlock;
-        uint96 votes;
-    }
 
-    /// @notice A record of votes checkpoints for each account, by index
-    mapping (address => mapping (uint32 => Checkpoint)) public checkpoints;
-
-    /// @notice The number of checkpoints for each account
-    mapping (address => uint32) public numCheckpoints;
 
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
@@ -426,13 +400,9 @@ contract LOM {
         else {
             _transferTokens(src,dst,amount);
         }
-
-
         
         return true;
     }
-
-    
 
     function _transferTokens(address src, address dst, uint96 amount) internal {
         require(src != address(0), "LOM::_transferTokens: cannot transfer from the zero address");
@@ -443,11 +413,7 @@ contract LOM {
         balances[src] = sub96(balances[src], amount, "LOM::Not enough tokens");
         balances[dst] = add96(balances[dst], amount, "LOM::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
-
-        //_moveDelegates(delegates[src], delegates[dst], amount);
     }
-
-    
 
     function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
         require(n < 2**32, errorMessage);
