@@ -698,14 +698,14 @@ contract LOMMdate is NFToken {
       teamType ttype;//Team1 ,team2
       starType stype;//ABCDEF
       uint256 power; // power
-      uint256 tpye1; // weapon
-      uint256 tpye2; // picture;
-      uint256 tpye3;
-      uint256 tpye4;
-      uint256 tpye5;
-      uint256 tpye6;
-      uint256 tpye7;
-      uint256 tpye8;
+      uint256 type1; // weapon
+      uint256 type2; // picture;
+      uint256 type3;
+      uint256 type4;
+      uint256 type5;
+      uint256 type6;
+      uint256 type7;
+      uint256 type8;
     }
     function _mintWeapon(address _to,uint256 _wType,uint256 _amount,uint8 _team) internal{
         weaponTeam[_wType] = _team;
@@ -743,7 +743,7 @@ contract LOMMdate is NFToken {
     
     function installWeaponToNFT(uint256 _tokenId,uint256 _wType) public validNFToken(_tokenId) canTransfer(_tokenId){
         require(weaponBalance[msg.sender][_wType]>0,"not weapon balance");
-        require(starAttributes[_tokenId].tpye1==0,"only weapon ");
+        require(starAttributes[_tokenId].type1==0,"only weapon ");
         uint8 team = weaponTeam[_wType];
         if(team == 1){
             require(starAttributes[_tokenId].ttype == teamType.t1,"weapon not is this team");
@@ -756,7 +756,7 @@ contract LOMMdate is NFToken {
     }
     
     function unInstalWeaponToNFT(uint256 _tokenId ) public validNFToken(_tokenId) canTransfer(_tokenId){
-        uint256 wType = starAttributes[_tokenId].tpye1;
+        uint256 wType = starAttributes[_tokenId].type1;
         require(wType>0,"not weapon");
         weaponBalance[msg.sender][wType] = weaponBalance[msg.sender][wType].add(1);
         _setTokenTypeAttributes(_tokenId,1,0);
@@ -838,31 +838,31 @@ contract LOMMdate is NFToken {
         
     }
     
-    function _setTokenAttributes(uint256 _tokenId, starType  _type, teamType _ttpye,uint256 _power) 
+    function _setTokenAttributes(uint256 _tokenId, starType  _type, teamType _ttype,uint256 _power) 
     internal validNFToken(_tokenId) {
         require(_type > starType.st_nil && _type <= starType.st6);
-        require(_ttpye > teamType.t_nil && _ttpye <= teamType.t2);
-        starAttributes[_tokenId] =  starAttributesStruct(_ttpye,_type,_power,0,0,0,0,0,0,0,0);
+        require(_ttype > teamType.t_nil && _ttype <= teamType.t2);
+        starAttributes[_tokenId] =  starAttributesStruct(_ttype,_type,_power,0,0,0,0,0,0,0,0);
     }
     
     function _setTokenTypeAttributes(uint256 _tokenId,uint8 _typeAttributes,uint256 _tvalue) 
     internal validNFToken(_tokenId) {
         if(_typeAttributes == 1){
-            starAttributes[_tokenId].tpye1 = _tvalue;
+            starAttributes[_tokenId].type1 = _tvalue;
         }else if(_typeAttributes == 2){
-            starAttributes[_tokenId].tpye2 = _tvalue; // picture;
+            starAttributes[_tokenId].type2 = _tvalue; // picture;
         }else if(_typeAttributes == 3){
-            starAttributes[_tokenId].tpye3 = _tvalue;
+            starAttributes[_tokenId].type3 = _tvalue;
         }else if(_typeAttributes == 4){
-            starAttributes[_tokenId].tpye4 = _tvalue;
+            starAttributes[_tokenId].type4 = _tvalue;
         }else if(_typeAttributes == 5){
-            starAttributes[_tokenId].tpye5 = _tvalue;
+            starAttributes[_tokenId].type5 = _tvalue;
         }else if(_typeAttributes == 6){
-            starAttributes[_tokenId].tpye6 = _tvalue;
+            starAttributes[_tokenId].type6 = _tvalue;
         }else if(_typeAttributes == 7){
-            starAttributes[_tokenId].tpye7 = _tvalue;
+            starAttributes[_tokenId].type7 = _tvalue;
         }else if(_typeAttributes == 8){
-            starAttributes[_tokenId].tpye8 = _tvalue;
+            starAttributes[_tokenId].type8 = _tvalue;
         }
     }
     
@@ -905,6 +905,7 @@ contract LOM_NFT is LOMMdate,Ownable{
      }
     
     function burn(uint256 _tokenId) external onlyManager {
+        require(idToApproval[_tokenId] == msg.sender,"未经授权");
         super._burn(_tokenId);
     }
     
