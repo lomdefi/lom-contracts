@@ -206,7 +206,7 @@ contract LOM {
     address public dispatcherAddress;
 
     /// @notice burning ratio per transfer, 0 means no burning.
-    uint public burningRatio = 0;
+    uint public burningRatio = 10;
 
 
     /// @notice Cap on the percentage of totalSupply that can be minted at each mint
@@ -255,13 +255,14 @@ contract LOM {
     /**
      * @notice Construct a new Uni token
      */
-    constructor() public {
+    constructor(address allocator) public {
         //require(mintingAllowedAfter_ >= block.timestamp, "LOM::constructor: minting can only begin after deployment");
 
         balances[msg.sender] = uint96(totalSupply);
         emit Transfer(address(0), msg.sender, totalSupply);
         minter = msg.sender;
         emit MinterChanged(address(0), minter);
+        dispatcherAddress = allocator;
         //mintingAllowedAfter = mintingAllowedAfter_;
     }
 
@@ -273,19 +274,6 @@ contract LOM {
         require(msg.sender == minter, "LOM::setMinter: only the minter can change the minter address");
         emit MinterChanged(minter, minter_);
         minter = minter_;
-    }
-
-    /**
-     */
-    function setDispatcherAddress(address _dispatcher) external {
-        require(msg.sender == minter, "LOM::setMinter: only the minter can change the dispatcher address");
-        dispatcherAddress = _dispatcher;
-    }
-
-
-    function setBurningRatio(uint _br) external {
-        require(msg.sender == minter, "LOM::setMinter: only the minter can change the burn status");
-        burningRatio = _br;
     }
     
     function setFromBlockList(address _from,bool isAdd) external{
