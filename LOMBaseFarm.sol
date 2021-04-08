@@ -1,6 +1,6 @@
 /**
- *Submitted for verification at hecoinfo.com on 2021-03-04
- LOM-USDT LP-POOL
+ * Liquidity mining contract
+ * LOM-USDT LP-POOL
 */
 
 pragma solidity ^0.6.12;
