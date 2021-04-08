@@ -155,7 +155,7 @@ contract LOMBurnAllocate {
     IERC20 public LOM;
     ILOMNFT public LOMNFT;
 
-    uint256 public lastAllocated;
+    uint256 public totalAllocated;
     uint256 public totalClaimed;
 
 
@@ -180,7 +180,8 @@ contract LOMBurnAllocate {
 
     function getUnAllocated() public view returns(uint256){
         uint256 currentBalance  = LOM.balanceOf(address(this));
-        uint256 currentCanAllocated = currentBalance+totalClaimed-lastAllocated;
+        uint256 currentCanAllocated = SafeMath.sub(SafeMath.add(currentBalance,totalClaimed),totalAllocated);
+        
         return currentCanAllocated;
     }
 
@@ -191,10 +192,10 @@ contract LOMBurnAllocate {
         uint256 tokenCount = LOMNFT.totalSupply();
 
         uint256 currentBalance  = LOM.balanceOf(address(this));
-        uint256 currentCanAllocated = currentBalance+totalClaimed-lastAllocated;
+        uint256 currentCanAllocated = SafeMath.sub(SafeMath.add(currentBalance,totalClaimed),totalAllocated);
         
         uint256 piece = SafeMath.div(currentCanAllocated, tokenCount);
-        require(piece>0,"");
+        require(piece>0,"LOM::too little burning fee to allocate");
 
         uint256 thisAllocated =0;
         uint i = 0;
@@ -205,11 +206,11 @@ contract LOMBurnAllocate {
             if(nftOwner==address(0x0))continue;
 
             uint256 amount=canClaim[nftOwner];
-            canClaim[nftOwner]=amount+piece;
-            thisAllocated+=piece;
+            canClaim[nftOwner]=SafeMath.add(amount,piece);
+            thisAllocated=SafeMath.add(thisAllocated,piece);
         }
 
-        lastAllocated +=thisAllocated;
+        totalAllocated =SafeMath.add(totalAllocated,thisAllocated);
     }
 
 
@@ -220,7 +221,7 @@ contract LOMBurnAllocate {
     function claim() public  {
         require(canClaim[msg.sender]>0,"LOM::nothing can be claimed");
         LOM.transfer(msg.sender,canClaim[msg.sender]);
-        totalClaimed+=canClaim[msg.sender];
+        totalClaimed=SafeMath.add(totalClaimed,canClaim[msg.sender]);
         canClaim[msg.sender]=0;
     }
 
