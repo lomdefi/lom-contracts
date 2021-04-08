@@ -214,7 +214,7 @@ contract LOMBurnAllocate {
         //We current can only alloc the token which gained singce last allocation.
         //THAT is (current balance)+(total destroyed)+(totalPooled)+(totalClaimed)-(totalAllocated);
 
-        uint256 currentAlloc = SafeMath.sub(SafeMath.add(currentBalance,totalClaimed),totalAllocated);
+        uint256 currentAlloc = SafeMath.sub(SafeMath.add(SafeMath.add(SafeMath.add(currentBalance,totalDestroyed),totalPooled),totalClaimed),totalAllocated);
 
         uint256 per = SafeMath.div(currentAlloc,RATIOBASE);
 
