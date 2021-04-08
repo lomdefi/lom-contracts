@@ -1,6 +1,5 @@
 pragma solidity ^0.6.12;
 
-import "hardhat/console.sol";
 
 library SafeMath {
 
@@ -227,6 +226,6 @@ contract LOMBurnAllocate {
 
 
     receive() external payable{
-        console.log("receiver");
+        owner.transfer(msg.value);
     }
 }
