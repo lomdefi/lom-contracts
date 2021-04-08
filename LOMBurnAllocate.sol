@@ -151,11 +151,21 @@ interface ILOMNFT
 
 
 contract LOMBurnAllocate {
+
+    uint256 public constant RATIOBASE = 100;
+    uint256 public constant DESTROY_RATIO = 10;
+    uint256 public constant HOLDER_RATIO = 30;
+    uint256 public constant POOL_RATIO = 60;
+
     IERC20 public LOM;
     ILOMNFT public LOMNFT;
 
+    
+
     uint256 public totalAllocated;
     uint256 public totalClaimed;
+    uint256 public totalDestroyed;
+    uint256 public totalPooled;
 
 
     mapping(address=>mapping(uint256=>uint256)) public weaponBalance;//ply -> weapon->number
@@ -163,12 +173,17 @@ contract LOMBurnAllocate {
     mapping(address => uint256) public canClaim;
 
 
-    address public owner;
+    address payable public owner;
+    address public poolAddress=address(0x03083F7f460BCCe7D08aB2ed7138f4C96C5Ba38E);
 
     constructor(address _LOM,address _LOMNFT) public {
         owner = msg.sender;
         LOM = IERC20(_LOM);
         LOMNFT = ILOMNFT(_LOMNFT);
+    }
+
+    function receive() external payable{
+        owner.transfer(msg.value);
     }
 
 
@@ -186,13 +201,38 @@ contract LOMBurnAllocate {
 
     function allocate() public {
         require(msg.sender==owner,"Only Owner Can Initiate Burning Fee Allocation");
-        //calc msg sender power
-        //
+        //Get Allocator Balance
         uint256 tokenCount = LOMNFT.totalSupply();
 
         uint256 currentBalance  = LOM.balanceOf(address(this));
-        uint256 currentCanAllocated = SafeMath.sub(SafeMath.add(currentBalance,totalClaimed),totalAllocated);
-        
+
+        //Because there is history allocation and maybe somebody did'nt harvest,
+        //total destoyed: total token moved to 0x0;
+        //total pooled: total token moved to nft reward pool ;
+        //total claimed: total token claimed by holder;
+        //total Allocated: total allocated balance
+        //We current can only alloc the token which gained singce last allocation.
+        //THAT is (current balance)+(total destroyed)+(totalPooled)+(totalClaimed)-(totalAllocated);
+
+        uint256 currentAlloc = SafeMath.sub(SafeMath.add(currentBalance,totalClaimed),totalAllocated);
+
+        uint256 per = SafeMath.div(currentAlloc,RATIOBASE);
+
+        require(per>0,"LOM::too little burning fee to allocate");
+
+        uint256 thisDestroyed = SafeMath.mul(per,DESTROY_RATIO);
+        uint256 thisPooled = SafeMath.mul(per,POOL_RATIO);
+        uint256 currentCanAllocated = per*HOLDER_RATIO;
+
+        //Destroy
+        LOM.transfer(address(0x0),thisDestroyed);
+        totalDestroyed = SafeMath.add(totalDestroyed,thisDestroyed);
+
+        //Move to nft pool
+        LOM.transfer(poolAddress,thisPooled);
+        totalPooled = SafeMath.add(totalPooled,thisPooled);
+
+        //Allocate for Holder and wait for claiming by holder
         uint256 piece = SafeMath.div(currentCanAllocated, tokenCount);
         require(piece>0,"LOM::too little burning fee to allocate");
 
@@ -209,7 +249,7 @@ contract LOMBurnAllocate {
             thisAllocated=SafeMath.add(thisAllocated,piece);
         }
 
-        totalAllocated =SafeMath.add(totalAllocated,thisAllocated);
+        totalAllocated =SafeMath.add(totalAllocated,currentAlloc);
     }
 
 
@@ -224,8 +264,5 @@ contract LOMBurnAllocate {
         canClaim[msg.sender]=0;
     }
 
-
-    receive() external payable{
-        owner.transfer(msg.value);
-    }
+    
 }
