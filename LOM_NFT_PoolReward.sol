@@ -1,5 +1,5 @@
 /**
- *Submitted for verification at hecoinfo.com on 2021-03-05
+ * LOM NFT Pool Reward Contract
 */
 
 pragma solidity ^0.5.16;
