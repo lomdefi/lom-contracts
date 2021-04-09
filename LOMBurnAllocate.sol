@@ -182,10 +182,6 @@ contract LOMBurnAllocate {
         LOMNFT = ILOMNFT(_LOMNFT);
     }
 
-    function receive() external payable{
-        owner.transfer(msg.value);
-    }
-
 
     function balanceOfBurning() public view returns(uint256){
         return LOM.balanceOf(address(this));
@@ -222,7 +218,7 @@ contract LOMBurnAllocate {
 
         uint256 thisDestroyed = SafeMath.mul(per,DESTROY_RATIO);
         uint256 thisPooled = SafeMath.mul(per,POOL_RATIO);
-        uint256 currentCanAllocated = per*HOLDER_RATIO;
+        uint256 currentCanAllocated = SafeMath.mul(per,HOLDER_RATIO);
 
         //Destroy
         LOM.transfer(address(0x0),thisDestroyed);
