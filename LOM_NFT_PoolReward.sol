@@ -1,5 +1,6 @@
 /**
- * LOM NFT Pool Reward Contract
+ * LOM NFT Stake Reward Contract.
+ * Last change at  2021-4-9
 */
 
 pragma solidity ^0.5.16;
@@ -428,8 +429,6 @@ contract LOM_NFT_PoolReward is TokenWrapper, IRewardDistributionRecipient {
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
     
-    bool public endCalcReward;
-
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
@@ -496,9 +495,6 @@ contract LOM_NFT_PoolReward is TokenWrapper, IRewardDistributionRecipient {
     }
 
     function getReward() public updateReward(msg.sender)  checkStart{
-        if(endCalcReward){
-            return;
-        }
         uint256 reward = earned(msg.sender);
         if (reward > 0 && block.timestamp <= periodFinish) {
             rewards[msg.sender] = 0;
@@ -511,23 +507,6 @@ contract LOM_NFT_PoolReward is TokenWrapper, IRewardDistributionRecipient {
         }
     }
     
-    function setRewardStop() public onlyRewardDistribution{
-        endCalcReward = true;
-    }
-    function withTRC20(address tokenAddr, address recipient,uint256 amount) public onlyRewardDistribution{
-        require(tokenAddr != address(0),"DPAddr: tokenAddr is zero");
-        require(recipient != address(0),"DPAddr: recipient is zero");
-        IERC20  tkCoin = IERC20(tokenAddr);
-        if(tkCoin.balanceOf(address(this)) >= amount){
-            tkCoin.transfer(recipient,amount);
-        }else{
-            tkCoin.transfer(recipient,tkCoin.balanceOf(address(this))) ;
-        }
-    }
-
-    function EmergencyWithNFT(address _to,uint256 _tokenID) public onlyRewardDistribution{
-        y.transferFrom(address(this),_to,_tokenID);
-    }
     modifier checkStart(){
         require(block.timestamp > starttime,"not start");
         _;
